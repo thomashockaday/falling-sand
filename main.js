@@ -9,8 +9,16 @@ function make2DArray(cols, rows) {
   return arr;
 }
 
+function withinCols(i) {
+  return i >= 0 && i <= cols - 1;
+}
+
+function withinRows(j) {
+  return j >= 0 && j <= rows - 1;
+}
+
 let grid;
-let w = 10;
+let w = 5;
 let cols, rows;
 
 function setup() {
@@ -21,11 +29,24 @@ function setup() {
 }
 
 function mouseDragged() {
-  let col = floor(mouseX / w);
-  let row = floor(mouseY / w);
+  let mouseCol = floor(mouseX / w);
+  let mouseRow = floor(mouseY / w);
 
-  if (col >= 0 && col <= cols - 1 && row >= 0 && row <= rows - 1)
-    grid[col][row] = 1;
+  let matrix = 3;
+  let extent = floor(matrix / 2);
+
+  for (let i = -extent; i <= extent; i++) {
+    for (let j = -extent; j <= extent; j++) {
+      if (random(1) > 0.75) {
+        let col = mouseCol + i;
+        let row = mouseRow + j;
+
+        if (withinCols(col) && withinRows(row)) {
+          grid[col][row] = 1;
+        }
+      }
+    }
+  }
 }
 
 function draw() {
@@ -56,24 +77,25 @@ function draw() {
           dir *= -1;
         }
 
-        let belowA, belowB;
+        let belowA = -1;
+        let belowB = -1;
 
-        if (i + dir >= 0 && i + dir <= cols - 1) {
+        if (withinCols(i + dir)) {
           belowA = grid[i + dir][j + 1];
         }
 
-        if (i - dir >= 0 && i - dir <= cols - 1) {
+        if (withinCols(i - dir)) {
           belowB = grid[i - dir][j + 1];
         }
 
         if (below === 0) {
-          nextGrid[i][j + 1] = 1;
+          nextGrid[i][j + 1] = state;
         } else if (belowA === 0) {
-          nextGrid[i + dir][j + 1] = 1;
+          nextGrid[i + dir][j + 1] = state;
         } else if (belowB === 0) {
-          nextGrid[i - dir][j + 1] = 1;
+          nextGrid[i - dir][j + 1] = state;
         } else {
-          nextGrid[i][j] = 1;
+          nextGrid[i][j] = state;
         }
       }
     }
