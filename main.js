@@ -14,19 +14,18 @@ let w = 10;
 let cols, rows;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(600, 600);
   cols = width / w;
   rows = height / w;
   grid = make2DArray(cols, rows);
-
-  grid[20][10] = 1;
 }
 
 function mouseDragged() {
   let col = floor(mouseX / w);
   let row = floor(mouseY / w);
 
-  grid[col][row] = 1;
+  if (col >= 0 && col <= cols - 1 && row >= 0 && row <= rows - 1)
+    grid[col][row] = 1;
 }
 
 function draw() {
@@ -34,11 +33,13 @@ function draw() {
 
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
-      stroke(255);
-      fill(grid[i][j] * 255);
-      let x = i * w;
-      let y = j * w;
-      square(x, y, w);
+      noStroke();
+      if (grid[i][j] === 1) {
+        fill(255);
+        let x = i * w;
+        let y = j * w;
+        square(x, y, w);
+      }
     }
   }
 
@@ -49,8 +50,28 @@ function draw() {
 
       if (state === 1) {
         let below = grid[i][j + 1];
-        if (below === 0 && j < rows) {
+        let dir = 1;
+
+        if (random(1) < 0.5) {
+          dir *= -1;
+        }
+
+        let belowA, belowB;
+
+        if (i + dir >= 0 && i + dir <= cols - 1) {
+          belowA = grid[i + dir][j + 1];
+        }
+
+        if (i - dir >= 0 && i - dir <= cols - 1) {
+          belowB = grid[i - dir][j + 1];
+        }
+
+        if (below === 0) {
           nextGrid[i][j + 1] = 1;
+        } else if (belowA === 0) {
+          nextGrid[i + dir][j + 1] = 1;
+        } else if (belowB === 0) {
+          nextGrid[i - dir][j + 1] = 1;
         } else {
           nextGrid[i][j] = 1;
         }
