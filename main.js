@@ -28,7 +28,7 @@ function setup() {
   grid = make2DArray(cols, rows);
 }
 
-function mouseDragged() {
+function drawSand() {
   let mouseCol = floor(mouseX / w);
   let mouseRow = floor(mouseY / w);
 
@@ -62,6 +62,10 @@ function draw() {
         square(x, y, w);
       }
     }
+  }
+
+  if (mouseIsPressed) {
+    drawSand();
   }
 
   let nextGrid = make2DArray(cols, rows);
