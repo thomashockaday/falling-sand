@@ -20,24 +20,66 @@ function withinRows(j) {
 let grid;
 let w = 5;
 let cols, rows;
+let canvas, ctx;
+let mouseX, mouseY;
+let mouseIsPressed = false;
+let frameId = 0;
 
-function setup() {
-  createCanvas(600, 600);
-  cols = width / w;
-  rows = height / w;
+function init() {
+  canvas = document.getElementById("canvas");
+  ctx = canvas.getContext("2d");
+
+  canvas.width = 600;
+  canvas.height = 600;
+
+  cols = canvas.width / w;
+  rows = canvas.height / w;
   grid = make2DArray(cols, rows);
+
+  canvas.addEventListener(
+    "pointerdown",
+    (event) => {
+      mouseX = event.offsetX;
+      mouseY = event.offsetY;
+
+      mouseIsPressed = true;
+    },
+    false
+  );
+
+  canvas.addEventListener(
+    "pointerup",
+    (event) => {
+      mouseX = event.offsetX;
+      mouseY = event.offsetY;
+
+      mouseIsPressed = false;
+    },
+    false
+  );
+
+  canvas.addEventListener(
+    "pointermove",
+    (event) => {
+      mouseX = event.offsetX;
+      mouseY = event.offsetY;
+    },
+    false
+  );
+
+  frameId = requestAnimationFrame(draw);
 }
 
 function drawSand() {
-  let mouseCol = floor(mouseX / w);
-  let mouseRow = floor(mouseY / w);
+  let mouseCol = Math.floor(mouseX / w);
+  let mouseRow = Math.floor(mouseY / w);
 
   let matrix = 3;
-  let extent = floor(matrix / 2);
+  let extent = Math.floor(matrix / 2);
 
   for (let i = -extent; i <= extent; i++) {
     for (let j = -extent; j <= extent; j++) {
-      if (random(1) > 0.75) {
+      if (Math.random() > 0.75) {
         let col = mouseCol + i;
         let row = mouseRow + j;
 
@@ -50,16 +92,16 @@ function drawSand() {
 }
 
 function draw() {
-  background(0);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
-      noStroke();
       if (grid[i][j] === 1) {
-        fill(255);
+        ctx.fillStyle = "#fff";
         let x = i * w;
         let y = j * w;
-        square(x, y, w);
+        ctx.fillRect(x, y, w, w);
       }
     }
   }
@@ -77,7 +119,7 @@ function draw() {
         let below = grid[i][j + 1];
         let dir = 1;
 
-        if (random(1) < 0.5) {
+        if (Math.random() < 0.5) {
           dir *= -1;
         }
 
@@ -106,4 +148,10 @@ function draw() {
   }
 
   grid = nextGrid;
+
+  frameId = requestAnimationFrame(draw);
 }
+
+addEventListener("DOMContentLoaded", () => {
+  init();
+});
