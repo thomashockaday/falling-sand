@@ -7,11 +7,13 @@ const HEIGHT = CANVAS_HEIGHT / SCALE;
 const EMPTY = 0;
 const SAND = 1;
 const WATER = 2;
+const WOOD = 3;
 
 const colors = {
   [EMPTY]: [0, 0, 0],
   [SAND]: [246, 215, 176],
   [WATER]: [64, 164, 223],
+  [WOOD]: [38, 30, 22],
 };
 
 const SAND_STEPS = 3;
@@ -222,23 +224,29 @@ function emitParticles() {
     radius = 5;
   }
 
+  if (currentMaterial === WOOD) {
+    radius = 7;
+  }
+
   for (let i = -radius; i <= radius; i++) {
     for (let j = -radius; j <= radius; j++) {
-      if (Math.random() > 0.75) {
-        const x = mouseX + i;
-        const y = mouseY + j;
+      if ([SAND, WATER].includes(currentMaterial) && Math.random() < 0.75) {
+        continue;
+      }
 
-        if (i * i + j * j <= radius * radius) {
-          if (
-            grid[x] !== undefined &&
-            grid[x] !== null &&
-            currentMaterial !== EMPTY &&
-            currentMaterial !== undefined &&
-            currentMaterial !== null
-          ) {
-            if (grid[x][y] === EMPTY) {
-              grid[x][y] = currentMaterial;
-            }
+      const x = mouseX + i;
+      const y = mouseY + j;
+
+      if (i * i + j * j <= radius * radius) {
+        if (
+          grid[x] !== undefined &&
+          grid[x] !== null &&
+          currentMaterial !== EMPTY &&
+          currentMaterial !== undefined &&
+          currentMaterial !== null
+        ) {
+          if (grid[x][y] === EMPTY) {
+            grid[x][y] = currentMaterial;
           }
         }
       }
@@ -291,6 +299,9 @@ window.addEventListener("keydown", (e) => {
       break;
     case "2":
       currentMaterial = WATER;
+      break;
+    case "3":
+      currentMaterial = WOOD;
       break;
     case "0":
       currentMaterial = EMPTY;
