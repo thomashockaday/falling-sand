@@ -406,7 +406,7 @@ function emitParticles() {
     return;
   }
 
-  let radius = 2;
+  let radius = 4;
 
   if (currentMaterial === WATER) {
     radius = 5;
