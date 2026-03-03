@@ -1,14 +1,28 @@
-body {
+* {
   margin: 0;
   padding: 0;
+}
+
+body {
   display: flex;
-  place-items: center;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #28282c;
+  gap: 2rem;
+  text-align: center;
+  line-height: 1.5;
+  font-family: sans-serif;
+  color: whitesmoke;
 }
 
 canvas {
   image-rendering: pixelated;
+}
+
+.controls {
+  button {
+    padding: 10px;
+  }
 }

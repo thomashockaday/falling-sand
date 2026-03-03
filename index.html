@@ -7,7 +7,18 @@
     <title>Falling Sand</title>
   </head>
   <body>
+    <header>
+      <h1>Falling Sand</h1>
+      <p>Click and drag around the canvas to watch the sand fall</p>
+    </header>
+
     <canvas id="canvas"></canvas>
+
+    <div class="controls">
+      <button onclick="currentMaterial = SAND">Sand</button>
+      <button onclick="currentMaterial = WATER">Water</button>
+      <button onclick="currentMaterial = WOOD">Wood</button>
+    </div>
     <script src="main.js"></script>
   </body>
 </html>
