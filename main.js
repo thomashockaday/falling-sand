@@ -1,26 +1,28 @@
-function make2DArray(cols, rows) {
-  let arr = new Array(cols);
-  for (let i = 0; i < arr.length; i++) {
-    arr[i] = new Array(rows);
-    for (let j = 0; j < arr[i].length; j++) {
-      arr[i][j] = 0;
-    }
-  }
-  return arr;
-}
+const isEmpty = (x, y) => {
+  return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && grid[x][y] === EMPTY;
+};
 
-function withinCols(i) {
-  return i >= 0 && i <= cols - 1;
-}
+const SCALE = 2;
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 600;
+const WIDTH = CANVAS_WIDTH / SCALE;
+const HEIGHT = CANVAS_HEIGHT / SCALE;
 
-function withinRows(j) {
-  return j >= 0 && j <= rows - 1;
-}
+const EMPTY = 0;
+const SAND = 1;
 
-let grid;
-let w = 5;
-let cols, rows;
+const colors = {
+  [EMPTY]: [0, 0, 0],
+  [SAND]: [246, 215, 176],
+};
+
+const MAX_STEP_SAND = 3;
+
+const grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+
 let canvas, ctx;
+let buffer, bctx;
+let imageData, pixels;
 let mouseX, mouseY;
 let mouseIsPressed = false;
 let frameId = 0;
@@ -28,63 +30,84 @@ let frameId = 0;
 function init() {
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
 
-  canvas.width = 600;
-  canvas.height = 600;
+  canvas.width = CANVAS_WIDTH;
+  canvas.height = CANVAS_HEIGHT;
 
-  cols = canvas.width / w;
-  rows = canvas.height / w;
-  grid = make2DArray(cols, rows);
+  buffer = document.createElement("canvas");
+  buffer.width = WIDTH;
+  buffer.height = HEIGHT;
+  bctx = buffer.getContext("2d");
+
+  imageData = ctx.createImageData(WIDTH, HEIGHT);
+  pixels = imageData.data;
 
   canvas.addEventListener(
     "pointerdown",
     (event) => {
-      mouseX = event.offsetX;
-      mouseY = event.offsetY;
+      const rect = canvas.getBoundingClientRect();
+      const mx = event.clientX - rect.left;
+      const my = event.clientY - rect.top;
+
+      mouseX = Math.floor(mx / SCALE);
+      mouseY = Math.floor(my / SCALE);
 
       mouseIsPressed = true;
     },
-    false
+    false,
   );
 
   canvas.addEventListener(
     "pointerup",
     (event) => {
-      mouseX = event.offsetX;
-      mouseY = event.offsetY;
+      const rect = canvas.getBoundingClientRect();
+      const mx = event.clientX - rect.left;
+      const my = event.clientY - rect.top;
+
+      mouseX = Math.floor(mx / SCALE);
+      mouseY = Math.floor(my / SCALE);
 
       mouseIsPressed = false;
     },
-    false
+    false,
   );
 
   canvas.addEventListener(
     "pointermove",
     (event) => {
-      mouseX = event.offsetX;
-      mouseY = event.offsetY;
+      const rect = canvas.getBoundingClientRect();
+      const mx = event.clientX - rect.left;
+      const my = event.clientY - rect.top;
+
+      mouseX = Math.floor(mx / SCALE);
+      mouseY = Math.floor(my / SCALE);
     },
-    false
+    false,
   );
 
   frameId = requestAnimationFrame(draw);
 }
 
 function drawSand() {
-  let mouseCol = Math.floor(mouseX / w);
-  let mouseRow = Math.floor(mouseY / w);
+  if (mouseX < 0 || mouseX >= WIDTH || mouseY < 0 || mouseY >= HEIGHT) {
+    return;
+  }
 
-  let matrix = 3;
-  let extent = Math.floor(matrix / 2);
+  let extent = 2;
 
   for (let i = -extent; i <= extent; i++) {
     for (let j = -extent; j <= extent; j++) {
       if (Math.random() > 0.75) {
-        let col = mouseCol + i;
-        let row = mouseRow + j;
+        const x = mouseX + i;
+        const y = mouseY + j;
 
-        if (withinCols(col) && withinRows(row)) {
-          grid[col][row] = 1;
+        if (i * i + j * j <= extent * extent) {
+          if (grid[x] !== undefined && grid[x] !== null) {
+            if (grid[x][y] === EMPTY) {
+              grid[x][y] = SAND;
+            }
+          }
         }
       }
     }
@@ -95,14 +118,16 @@ function draw() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      if (grid[i][j] === 1) {
-        ctx.fillStyle = "#fff";
-        let x = i * w;
-        let y = j * w;
-        ctx.fillRect(x, y, w, w);
-      }
+  for (let i = 0; i < WIDTH; i++) {
+    for (let j = 0; j < HEIGHT; j++) {
+      const type = grid[i][j];
+      const color = colors[type];
+      const idx = (j * WIDTH + i) * 4;
+
+      pixels[idx] = color[0];
+      pixels[idx + 1] = color[1];
+      pixels[idx + 2] = color[2];
+      pixels[idx + 3] = color[3] ?? 255;
     }
   }
 
@@ -110,44 +135,44 @@ function draw() {
     drawSand();
   }
 
-  let nextGrid = make2DArray(cols, rows);
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      let state = grid[i][j];
+  for (let y = HEIGHT - 1; y >= 0; y--) {
+    for (let x = 0; x < WIDTH; x++) {
+      if (grid[x][y] === SAND) {
+        let updatedX = x;
+        let updatedY = y;
+        const steps = MAX_STEP_SAND;
 
-      if (state === 1) {
-        let below = grid[i][j + 1];
-        let dir = 1;
+        for (let s = 0; s < steps; s++) {
+          let newX = x;
+          let newY = y;
 
-        if (Math.random() < 0.5) {
-          dir *= -1;
+          if (isEmpty(x, y + 1)) {
+            newX = x;
+            newY = y + 1;
+          } else if (isEmpty(x - 1, y + 1)) {
+            newX = x - 1;
+            newY = y + 1;
+          } else if (isEmpty(x + 1, y + 1)) {
+            newX = x + 1;
+            newY = y + 1;
+          }
+
+          if (newX === updatedX && newY === updatedY) {
+            break;
+          }
+
+          updatedX = newX;
+          updatedY = newY;
         }
 
-        let belowA = -1;
-        let belowB = -1;
-
-        if (withinCols(i + dir)) {
-          belowA = grid[i + dir][j + 1];
-        }
-
-        if (withinCols(i - dir)) {
-          belowB = grid[i - dir][j + 1];
-        }
-
-        if (below === 0) {
-          nextGrid[i][j + 1] = state;
-        } else if (belowA === 0) {
-          nextGrid[i + dir][j + 1] = state;
-        } else if (belowB === 0) {
-          nextGrid[i - dir][j + 1] = state;
-        } else {
-          nextGrid[i][j] = state;
-        }
+        grid[x][y] = EMPTY;
+        grid[updatedX][updatedY] = SAND;
       }
     }
   }
 
-  grid = nextGrid;
+  bctx.putImageData(imageData, 0, 0);
+  ctx.drawImage(buffer, 0, 0, WIDTH * SCALE, HEIGHT * SCALE);
 
   frameId = requestAnimationFrame(draw);
 }
