@@ -289,7 +289,7 @@ function burn(x, y) {
     }
 
     if (isFlammable(grid[nx][ny]) && burnLife[nx][ny] === 0) {
-      if (Math.random() < 0.06) {
+      if (Math.random() < 0.2) {
         // Ignite
         burnLife[nx][ny] = 30 + Math.random() * 30;
       }
