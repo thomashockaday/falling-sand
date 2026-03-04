@@ -502,7 +502,7 @@ function emitParticles() {
     radius = 5;
   }
 
-  if (currentMaterial === WOOD || currentMaterial === BLOCK) {
+  if ([WOOD, BLOCK, EMPTY].includes(currentMaterial)) {
     radius = 7;
   }
 
@@ -522,10 +522,14 @@ function emitParticles() {
         if (
           grid[x] !== undefined &&
           grid[x] !== null &&
-          currentMaterial !== EMPTY &&
           currentMaterial !== undefined &&
           currentMaterial !== null
         ) {
+          if (currentMaterial === EMPTY) {
+            grid[x][y] = currentMaterial;
+            continue;
+          }
+
           if (grid[x][y] === EMPTY) {
             grid[x][y] = currentMaterial;
 
