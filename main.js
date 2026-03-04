@@ -11,6 +11,7 @@ const WOOD = 3;
 const FIRE = 4;
 const GAS = 5;
 const ACID = 6;
+const BLOCK = 7;
 
 const colors = {
   [EMPTY]: [0, 0, 0],
@@ -20,6 +21,7 @@ const colors = {
   [FIRE]: [242, 125, 12],
   [GAS]: [216, 216, 216],
   [ACID]: [33, 223, 25],
+  [BLOCK]: [53, 62, 67],
 };
 
 const SAND_STEPS = 2;
@@ -500,7 +502,7 @@ function emitParticles() {
     radius = 5;
   }
 
-  if (currentMaterial === WOOD) {
+  if (currentMaterial === WOOD || currentMaterial === BLOCK) {
     radius = 7;
   }
 
@@ -623,6 +625,9 @@ window.addEventListener("keydown", (e) => {
       break;
     case "6":
       currentMaterial = ACID;
+      break;
+    case "7":
+      currentMaterial = BLOCK;
       break;
     case "0":
       currentMaterial = EMPTY;
