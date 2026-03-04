@@ -10,6 +10,7 @@ const WATER = 2;
 const WOOD = 3;
 const FIRE = 4;
 const GAS = 5;
+const ACID = 6;
 
 const colors = {
   [EMPTY]: [0, 0, 0],
@@ -18,22 +19,28 @@ const colors = {
   [WOOD]: [58, 50, 42],
   [FIRE]: [242, 125, 12],
   [GAS]: [216, 216, 216],
+  [ACID]: [33, 223, 25],
 };
 
 const SAND_STEPS = 2;
 const WATER_STEPS = 2;
 const FIRE_STEPS = 2;
 const GAS_STEPS = 1;
+const ACID_STEPS = 2;
 
 const MAX_STEP_SAND = 3;
 const MAX_STEP_WATER = 3;
+const MAX_STEP_ACID = 1;
 
 const grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 const fallDist = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 
 const burnLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+const corrodeLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+
 const fireLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 const gasLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+const acidLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 
 const GAS_MIN_ALPHA = 20;
 const GAS_MAX_LIFE = 40;
@@ -48,7 +55,8 @@ let frameId = 0;
 let currentMaterial = SAND;
 let flip = false;
 
-const isFlammable = (type) => type === SAND || type === WOOD;
+const isFlammable = (type) => [SAND, WOOD].includes(type);
+const isCorrodable = (type) => [SAND, WOOD].includes(type);
 
 const isEmpty = (x, y) => {
   return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && grid[x][y] === EMPTY;
@@ -70,7 +78,7 @@ function updateSandPos(x, y) {
   return [x, y];
 }
 
-function updateWaterPos(x, y) {
+function updateLiquidPos(x, y) {
   if (isEmpty(x, y + 1)) {
     return [x, y + 1];
   }
@@ -217,7 +225,7 @@ function stepWater() {
         let steps = Math.min(fallDist[x][y], MAX_STEP_WATER);
 
         for (let s = 0; s < steps; s++) {
-          const [newX, newY] = updateWaterPos(updatedX, updatedY);
+          const [newX, newY] = updateLiquidPos(updatedX, updatedY);
 
           if (newX === updatedX && newY === updatedY) {
             break;
@@ -293,6 +301,27 @@ function burn(x, y) {
   }
 }
 
+function corrode(x, y) {
+  const neighbors = [
+    [x, y + 1],
+    [x, y - 1],
+    [x - 1, y],
+    [x + 1, y],
+  ];
+
+  for (const [nx, ny] of neighbors) {
+    if (nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) {
+      continue;
+    }
+
+    if (isCorrodable(grid[nx][ny]) && corrodeLife[nx][ny] === 0) {
+      if (Math.random() < 0.03) {
+        corrodeLife[nx][ny] = 30 + Math.random() * 30;
+      }
+    }
+  }
+}
+
 const stepBurning = () => {
   for (let y = 0; y < HEIGHT; y++) {
     for (let x = 0; x < WIDTH; x++) {
@@ -314,7 +343,26 @@ const stepBurning = () => {
   }
 };
 
-const stepFire = () => {
+function stepCorroding() {
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      if (corrodeLife[x][y] > 0) {
+        corrodeLife[x][y]--;
+
+        if (Math.random() < 0.1) {
+          grid[x][y] = ACID;
+          acidLife[x][y] = 15;
+        }
+
+        if (corrodeLife[x][y] === 0) {
+          grid[x][y] = EMPTY;
+        }
+      }
+    }
+  }
+}
+
+function stepFire() {
   for (let y = 0; y < HEIGHT; y++) {
     for (let x = 0; x < WIDTH; x++) {
       if (grid[x][y] === FIRE) {
@@ -337,7 +385,47 @@ const stepFire = () => {
       }
     }
   }
-};
+}
+
+function stepAcid() {
+  flip = !flip;
+
+  const xStart = flip ? 0 : WIDTH - 1;
+  const xEnd = flip ? WIDTH : -1;
+  const xStep = flip ? 1 : -1;
+
+  for (let y = HEIGHT - 1; y >= 0; y--) {
+    for (let x = xStart; x !== xEnd; x += xStep) {
+      if (grid[x][y] === ACID) {
+        let updatedX = x;
+        let updatedY = y;
+        let steps = Math.min(fallDist[x][y], MAX_STEP_ACID);
+
+        for (let s = 0; s < steps; s++) {
+          const [newX, newY] = updateLiquidPos(updatedX, updatedY);
+
+          if (newX === updatedX && newY === updatedY) {
+            break;
+          }
+
+          updatedX = newX;
+          updatedY = newY;
+        }
+
+        grid[x][y] = EMPTY;
+        grid[updatedX][updatedY] = ACID;
+
+        corrode(x, y);
+
+        if (updatedX === x && updatedY === y) {
+          fallDist[x][y] = 1;
+        } else {
+          fallDist[updatedX][updatedY] = fallDist[x][y] + 1;
+        }
+      }
+    }
+  }
+}
 
 function init() {
   canvas = document.getElementById("canvas");
@@ -419,7 +507,7 @@ function emitParticles() {
   for (let i = -radius; i <= radius; i++) {
     for (let j = -radius; j <= radius; j++) {
       if (
-        [SAND, WATER, FIRE, GAS].includes(currentMaterial) &&
+        [SAND, WATER, FIRE, GAS, ACID].includes(currentMaterial) &&
         Math.random() < 0.75
       ) {
         continue;
@@ -446,6 +534,10 @@ function emitParticles() {
             if (currentMaterial == GAS) {
               gasLife[x][y] = 20 + Math.random() * 20;
             }
+
+            if (currentMaterial == ACID) {
+              acidLife[x][y] = 20 + Math.random() * 20;
+            }
           }
         }
       }
@@ -469,6 +561,11 @@ function update() {
 
   for (let i = 0; i < GAS_STEPS; i++) {
     stepGas();
+  }
+
+  for (let i = 0; i < ACID_STEPS; i++) {
+    stepCorroding();
+    stepAcid();
   }
 
   if (mouseIsPressed) {
@@ -523,6 +620,9 @@ window.addEventListener("keydown", (e) => {
       break;
     case "5":
       currentMaterial = GAS;
+      break;
+    case "6":
+      currentMaterial = ACID;
       break;
     case "0":
       currentMaterial = EMPTY;
