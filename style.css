@@ -4,11 +4,11 @@
 }
 
 body {
-  min-height: 100vh;
   background-color: #28282c;
   text-align: center;
   font-family: sans-serif;
   color: whitesmoke;
+  overflow: hidden;
 }
 
 header {
@@ -31,7 +31,6 @@ canvas {
   flex-wrap: wrap;
   gap: 5px;
   width: 100%;
-  height: 90px;
   align-items: center;
   justify-content: center;
 
