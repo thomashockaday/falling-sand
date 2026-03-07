@@ -23,11 +23,7 @@
       <button onclick="currentMaterial = ACID">Acid</button>
       <button onclick="currentMaterial = BLOCK">Block</button>
       <button onclick="currentMaterial = EMPTY">Erase</button>
-      <button
-        onclick="grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));"
-      >
-        Reset
-      </button>
+      <button onclick="resetGrids()">Reset</button>
     </div>
     <script src="main.js"></script>
   </body>

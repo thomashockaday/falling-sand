@@ -35,15 +35,9 @@ const MAX_STEP_SAND = 3;
 const MAX_STEP_WATER = 3;
 const MAX_STEP_ACID = 1;
 
-let grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-let fallDist = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-
-let burnLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-let corrodeLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-
-let fireLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-let gasLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-let acidLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let grid, fallDist;
+let burnLife, corrodeLife;
+let fireLife, gasLife, acidLife;
 
 const GAS_MIN_ALPHA = 20;
 const GAS_MAX_LIFE = 40;
@@ -60,6 +54,18 @@ let flip = false;
 
 const isFlammable = (type) => [SAND, WOOD].includes(type);
 const isCorrodable = (type) => [SAND, WOOD].includes(type);
+
+function resetGrids() {
+  grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+  fallDist = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+
+  burnLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+  corrodeLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+
+  fireLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+  gasLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+  acidLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+}
 
 const isEmpty = (x, y) => {
   return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && grid[x][y] === EMPTY;
@@ -457,6 +463,8 @@ function init() {
 
   imageData = ctx.createImageData(WIDTH, HEIGHT);
   pixels = imageData.data;
+
+  resetGrids();
 
   canvas.addEventListener(
     "pointerdown",
