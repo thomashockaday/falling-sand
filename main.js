@@ -34,7 +34,7 @@ const MAX_STEP_SAND = 3;
 const MAX_STEP_WATER = 3;
 const MAX_STEP_ACID = 1;
 
-const grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 const fallDist = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 
 const burnLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
@@ -457,7 +457,7 @@ function init() {
 
       mouseIsPressed = true;
     },
-    false,
+    false
   );
 
   canvas.addEventListener(
@@ -472,7 +472,7 @@ function init() {
 
       mouseIsPressed = false;
     },
-    false,
+    false
   );
 
   canvas.addEventListener(
@@ -485,7 +485,7 @@ function init() {
       mouseX = Math.floor(mx / SCALE);
       mouseY = Math.floor(my / SCALE);
     },
-    false,
+    false
   );
 
   frameId = requestAnimationFrame(loop);
