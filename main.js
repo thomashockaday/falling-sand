@@ -1,8 +1,9 @@
 const SCALE = 2;
-const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 600;
-const WIDTH = CANVAS_WIDTH / SCALE;
-const HEIGHT = CANVAS_HEIGHT / SCALE;
+
+let CANVAS_WIDTH = Math.floor(window.innerWidth / SCALE) * SCALE;
+let CANVAS_HEIGHT = Math.floor(window.innerHeight / SCALE) * SCALE - 100;
+let WIDTH = CANVAS_WIDTH / SCALE;
+let HEIGHT = CANVAS_HEIGHT / SCALE;
 
 const EMPTY = 0;
 const SAND = 1;
@@ -35,14 +36,14 @@ const MAX_STEP_WATER = 3;
 const MAX_STEP_ACID = 1;
 
 let grid = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-const fallDist = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let fallDist = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 
-const burnLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-const corrodeLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let burnLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let corrodeLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 
-const fireLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-const gasLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
-const acidLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let fireLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let gasLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
+let acidLife = Array.from({ length: WIDTH }, () => new Uint8Array(HEIGHT));
 
 const GAS_MIN_ALPHA = 20;
 const GAS_MAX_LIFE = 40;
@@ -62,6 +63,18 @@ const isCorrodable = (type) => [SAND, WOOD].includes(type);
 
 const isEmpty = (x, y) => {
   return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && grid[x][y] === EMPTY;
+};
+
+const throttle = (callback, wait) => {
+  let timeoutId = null;
+  return (...args) => {
+    if (timeoutId === null) {
+      timeoutId = setTimeout(() => {
+        callback(...args);
+        timeoutId = null;
+      }, wait);
+    }
+  };
 };
 
 function updateSandPos(x, y) {
@@ -638,6 +651,34 @@ window.addEventListener("keydown", (e) => {
       break;
   }
 });
+
+const handleResize = throttle(() => {
+  CANVAS_WIDTH = Math.floor(window.innerWidth / SCALE) * SCALE;
+  CANVAS_HEIGHT = Math.floor(window.innerHeight / SCALE) * SCALE - 100;
+  WIDTH = CANVAS_WIDTH / SCALE;
+  HEIGHT = CANVAS_HEIGHT / SCALE;
+
+  canvas.width = CANVAS_WIDTH;
+  canvas.height = CANVAS_HEIGHT;
+
+  buffer.width = WIDTH;
+  buffer.height = HEIGHT;
+
+  imageData = ctx.createImageData(WIDTH, HEIGHT);
+  pixels = imageData.data;
+
+  while (grid.length < WIDTH) {
+    grid.push(new Uint8Array(HEIGHT));
+    fallDist.push(new Uint8Array(HEIGHT));
+    burnLife.push(new Uint8Array(HEIGHT));
+    corrodeLife.push(new Uint8Array(HEIGHT));
+    fireLife.push(new Uint8Array(HEIGHT));
+    gasLife.push(new Uint8Array(HEIGHT));
+    acidLife.push(new Uint8Array(HEIGHT));
+  }
+}, 300);
+
+window.addEventListener("resize", handleResize);
 
 addEventListener("DOMContentLoaded", () => {
   init();

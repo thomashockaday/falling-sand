@@ -4,26 +4,37 @@
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
   background-color: #28282c;
-  gap: 2rem;
   text-align: center;
-  line-height: 1.5;
   font-family: sans-serif;
   color: whitesmoke;
 }
 
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  line-height: 1.5;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 canvas {
   image-rendering: pixelated;
-  -webkit-user-select: none; /* Safari */
+  -webkit-user-select: none;
   user-select: none;
 }
 
 .controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  width: 100%;
+  height: 90px;
+  align-items: center;
+  justify-content: center;
+
   button {
     padding: 10px;
   }
