@@ -19,6 +19,8 @@ body {
 
 canvas {
   image-rendering: pixelated;
+  -webkit-user-select: none; /* Safari */
+  user-select: none;
 }
 
 .controls {
