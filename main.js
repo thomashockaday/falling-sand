@@ -466,15 +466,52 @@ function init() {
 
   resetGrids();
 
-  canvas.addEventListener("pointerdown", handleMousedown);
+  canvas.addEventListener("mousedown", handleMousedown);
+  canvas.addEventListener("touchstart", handleTouchStart);
 
-  canvas.addEventListener("pointerup", handleMouseup);
-  canvas.addEventListener("touchcancel", handleMouseup);
+  canvas.addEventListener("mouseup", handleMouseup);
+  canvas.addEventListener("touchend", handleTouchEnd);
+  canvas.addEventListener("touchcancel", handleTouchEnd);
 
   canvas.addEventListener("mousemove", handleMousemove);
-  canvas.addEventListener("touchmove", handleMousemove);
+  canvas.addEventListener("touchmove", handleTouchMove);
 
   frameId = requestAnimationFrame(loop);
+}
+
+function handleTouchStart(event) {
+  event.preventDefault();
+
+  const rect = canvas.getBoundingClientRect();
+
+  for (const changedTouch of event.changedTouches) {
+    const mx = changedTouch.pageX - rect.left;
+    const my = changedTouch.pageY - rect.top;
+
+    mouseX = Math.floor(mx / SCALE);
+    mouseY = Math.floor(my / SCALE);
+
+    mouseIsPressed = true;
+  }
+}
+
+function handleTouchEnd(event) {
+  event.preventDefault();
+  handleMouseup();
+}
+
+function handleTouchMove(event) {
+  event.preventDefault();
+
+  const rect = canvas.getBoundingClientRect();
+
+  for (const changedTouch of event.changedTouches) {
+    const mx = changedTouch.pageX - rect.left;
+    const my = changedTouch.pageY - rect.top;
+
+    mouseX = Math.floor(mx / SCALE);
+    mouseY = Math.floor(my / SCALE);
+  }
 }
 
 function handleMousedown(event) {
@@ -488,14 +525,7 @@ function handleMousedown(event) {
   mouseIsPressed = true;
 }
 
-function handleMouseup(event) {
-  const rect = canvas.getBoundingClientRect();
-  const mx = event.clientX - rect.left;
-  const my = event.clientY - rect.top;
-
-  mouseX = Math.floor(mx / SCALE);
-  mouseY = Math.floor(my / SCALE);
-
+function handleMouseup() {
   mouseIsPressed = false;
 }
 
