@@ -466,50 +466,46 @@ function init() {
 
   resetGrids();
 
-  canvas.addEventListener(
-    "pointerdown",
-    (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = event.clientX - rect.left;
-      const my = event.clientY - rect.top;
+  canvas.addEventListener("pointerdown", handleMousedown);
 
-      mouseX = Math.floor(mx / SCALE);
-      mouseY = Math.floor(my / SCALE);
+  canvas.addEventListener("pointerup", handleMouseup);
+  canvas.addEventListener("touchcancel", handleMouseup);
 
-      mouseIsPressed = true;
-    },
-    false
-  );
-
-  canvas.addEventListener(
-    "pointerup",
-    (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = event.clientX - rect.left;
-      const my = event.clientY - rect.top;
-
-      mouseX = Math.floor(mx / SCALE);
-      mouseY = Math.floor(my / SCALE);
-
-      mouseIsPressed = false;
-    },
-    false
-  );
-
-  canvas.addEventListener(
-    "pointermove",
-    (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const mx = event.clientX - rect.left;
-      const my = event.clientY - rect.top;
-
-      mouseX = Math.floor(mx / SCALE);
-      mouseY = Math.floor(my / SCALE);
-    },
-    false
-  );
+  canvas.addEventListener("mousemove", handleMousemove);
+  canvas.addEventListener("touchmove", handleMousemove);
 
   frameId = requestAnimationFrame(loop);
+}
+
+function handleMousedown(event) {
+  const rect = canvas.getBoundingClientRect();
+  const mx = event.clientX - rect.left;
+  const my = event.clientY - rect.top;
+
+  mouseX = Math.floor(mx / SCALE);
+  mouseY = Math.floor(my / SCALE);
+
+  mouseIsPressed = true;
+}
+
+function handleMouseup(event) {
+  const rect = canvas.getBoundingClientRect();
+  const mx = event.clientX - rect.left;
+  const my = event.clientY - rect.top;
+
+  mouseX = Math.floor(mx / SCALE);
+  mouseY = Math.floor(my / SCALE);
+
+  mouseIsPressed = false;
+}
+
+function handleMousemove(event) {
+  const rect = canvas.getBoundingClientRect();
+  const mx = event.clientX - rect.left;
+  const my = event.clientY - rect.top;
+
+  mouseX = Math.floor(mx / SCALE);
+  mouseY = Math.floor(my / SCALE);
 }
 
 function emitParticles() {
