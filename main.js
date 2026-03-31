@@ -27,7 +27,7 @@ const colors = {
 
 const SAND_STEPS = 2;
 const WATER_STEPS = 2;
-const FIRE_STEPS = 2;
+const FIRE_STEPS = 1;
 const GAS_STEPS = 1;
 const ACID_STEPS = 2;
 
