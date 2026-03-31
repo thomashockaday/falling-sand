@@ -672,12 +672,9 @@ window.addEventListener("keydown", (e) => {
       currentMaterial = FIRE;
       break;
     case "5":
-      currentMaterial = GAS;
-      break;
-    case "6":
       currentMaterial = ACID;
       break;
-    case "7":
+    case "6":
       currentMaterial = BLOCK;
       break;
     case "0":
