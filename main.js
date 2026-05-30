@@ -1,9 +1,9 @@
 const SCALE = 2;
 
-let CANVAS_WIDTH = Math.floor(window.innerWidth / SCALE) * SCALE;
-let CANVAS_HEIGHT = Math.floor(window.innerHeight / SCALE) * SCALE - 100;
-let WIDTH = CANVAS_WIDTH / SCALE;
-let HEIGHT = CANVAS_HEIGHT / SCALE;
+let CANVAS_WIDTH;
+let CANVAS_HEIGHT;
+let WIDTH;
+let HEIGHT;
 
 const EMPTY = 0;
 const SAND = 1;
@@ -69,18 +69,6 @@ function resetGrids() {
 
 const isEmpty = (x, y) => {
   return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT && grid[x][y] === EMPTY;
-};
-
-const throttle = (callback, wait) => {
-  let timeoutId = null;
-  return (...args) => {
-    if (timeoutId === null) {
-      timeoutId = setTimeout(() => {
-        callback(...args);
-        timeoutId = null;
-      }, wait);
-    }
-  };
 };
 
 function updateSandPos(x, y) {
@@ -452,18 +440,10 @@ function init() {
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = false;
-
-  canvas.width = CANVAS_WIDTH;
-  canvas.height = CANVAS_HEIGHT;
-
   buffer = document.createElement("canvas");
-  buffer.width = WIDTH;
-  buffer.height = HEIGHT;
   bctx = buffer.getContext("2d");
 
-  imageData = ctx.createImageData(WIDTH, HEIGHT);
-  pixels = imageData.data;
-
+  handleResize();
   resetGrids();
 
   canvas.addEventListener("mousedown", handleMousedown);
@@ -683,7 +663,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-const handleResize = throttle(() => {
+function handleResize() {
   CANVAS_WIDTH = Math.floor(window.innerWidth / SCALE) * SCALE;
   CANVAS_HEIGHT = Math.floor(window.innerHeight / SCALE) * SCALE - 100;
   WIDTH = CANVAS_WIDTH / SCALE;
@@ -698,6 +678,10 @@ const handleResize = throttle(() => {
   imageData = ctx.createImageData(WIDTH, HEIGHT);
   pixels = imageData.data;
 
+  if (!grid) {
+    return;
+  }
+
   while (grid.length < WIDTH) {
     grid.push(new Uint8Array(HEIGHT));
     fallDist.push(new Uint8Array(HEIGHT));
@@ -707,7 +691,7 @@ const handleResize = throttle(() => {
     gasLife.push(new Uint8Array(HEIGHT));
     acidLife.push(new Uint8Array(HEIGHT));
   }
-}, 300);
+}
 
 window.addEventListener("resize", handleResize);
 
